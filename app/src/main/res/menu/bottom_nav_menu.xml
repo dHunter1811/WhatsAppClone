@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_chat"
+        android:icon="@drawable/ic_chat"
+        android:title="Chat" />
+
+    <item
+        android:id="@+id/navigation_updates"
+        android:icon="@drawable/ic_updates"
+        android:title="Pembaruan" />
+
+    <item
+        android:id="@+id/navigation_community"
+        android:icon="@drawable/ic_community"
+        android:title="Komunitas" />
+
+    <item
+        android:id="@+id/navigation_calls"
+        android:icon="@drawable/ic_calls"
+        android:title="Panggilan" />
+
+</menu>
