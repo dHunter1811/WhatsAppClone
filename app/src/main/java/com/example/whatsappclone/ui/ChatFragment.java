@@ -49,11 +49,7 @@ public class ChatFragment extends Fragment {
         // Required empty public constructor
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true); // penting agar fragment menerima event menu
-    }
+    // setHasOptionsMenu(true); DIHAPUS DARI SINI
 
     @Nullable
     @Override
@@ -113,26 +109,7 @@ public class ChatFragment extends Fragment {
         loadUserList(view);
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.toolbar_menu, menu); // inflate menu dari res/menu/toolbar_menu.xml
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_more) {
-            // Logout dan arahkan ke LoginActivity
-            FirebaseAuth.getInstance().signOut();
-
-            Intent intent = new Intent(getActivity(), LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // hapus backstack
-            startActivity(intent);
-
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+    // --- METODE onCreateOptionsMenu DAN onOptionsItemSelected DIHAPUS DARI SINI ---
 
     private void loadChatsFromFirebase() {
         if (currentUser == null) return;
