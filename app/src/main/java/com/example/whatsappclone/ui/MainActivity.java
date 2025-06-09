@@ -17,6 +17,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import android.text.format.DateFormat;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -109,5 +114,26 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+    }
+
+    private void updateUserStatus(String status) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            DocumentReference userRef = FirebaseFirestore.getInstance().collection("users").document(user.getUid());
+            userRef.update("onlineStatus", status);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateUserStatus("Online");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Simpan timestamp kapan terakhir aktif
+        updateUserStatus("Terakhir aktif: " + DateFormat.format("HH:mm", System.currentTimeMillis()).toString());
     }
 }
