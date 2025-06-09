@@ -15,6 +15,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.example.whatsappclone.R;
+import com.example.whatsappclone.models.Call;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Map;
@@ -25,6 +27,10 @@ import io.agora.rtc2.IRtcEngineEventHandler;
 import io.agora.rtc2.RtcEngine;
 import io.agora.rtc2.RtcEngineConfig;
 import io.agora.rtc2.video.VideoCanvas;
+
+import com.example.whatsappclone.models.CallHistory;
+import java.util.Date;
+import java.util.UUID;
 
 public class CallActivity extends AppCompatActivity {
 
@@ -165,10 +171,53 @@ public class CallActivity extends AppCompatActivity {
 
     private void endCall() {
         leaveChannel();
+
         if (callId != null) {
-            FirebaseFirestore.getInstance().collection("calls").document(callId).update("status", "ended");
+            // 1. Update status panggilan menjadi "ended"
+            DocumentReference callRef = FirebaseFirestore.getInstance().collection("calls").document(callId);
+            callRef.update("status", "ended");
+
+            // 2. Ambil detail panggilan untuk disimpan ke riwayat
+            callRef.get().addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    Call callData = documentSnapshot.toObject(Call.class);
+                    if (callData != null) {
+                        saveCallToHistory(callData);
+                    }
+                }
+            });
         }
-        finish();
+        finish(); // Tutup activity setelah semuanya dimulai
+    }
+
+    private void saveCallToHistory(Call callData) {
+        // Buat entri riwayat untuk Penelepon (outgoing)
+        String callerHistoryId = UUID.randomUUID().toString();
+        CallHistory callerHistory = new CallHistory(
+                callerHistoryId,
+                callData.getReceiverId(),
+                null, // Nama receiver akan diambil nanti di adapter
+                null, // Foto receiver akan diambil nanti di adapter
+                System.currentTimeMillis(),
+                callData.getCallType(),
+                "outgoing"
+        );
+        FirebaseFirestore.getInstance().collection("users").document(callData.getCallerId())
+                .collection("call_history").document(callerHistoryId).set(callerHistory);
+
+        // Buat entri riwayat untuk Penerima (incoming)
+        String receiverHistoryId = UUID.randomUUID().toString();
+        CallHistory receiverHistory = new CallHistory(
+                receiverHistoryId,
+                callData.getCallerId(),
+                callData.getCallerName(),
+                callData.getCallerPhotoUrl(),
+                System.currentTimeMillis(),
+                callData.getCallType(),
+                "incoming"
+        );
+        FirebaseFirestore.getInstance().collection("users").document(callData.getReceiverId())
+                .collection("call_history").document(receiverHistoryId).set(receiverHistory);
     }
 
     private void leaveChannel() {
