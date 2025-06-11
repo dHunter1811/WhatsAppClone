@@ -32,6 +32,10 @@ import java.util.List;
 import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import com.google.firebase.firestore.SetOptions;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -165,15 +169,37 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void sendMessage() {
-        // ... (kode sendMessage tetap sama seperti sebelumnya)
         String messageText = messageInput.getText().toString().trim();
-        if (TextUtils.isEmpty(messageText)) return;
+        if (TextUtils.isEmpty(messageText)) {
+            return; // Jangan kirim pesan kosong
+        }
+
+        if (currentUser == null || chatId == null) {
+            Toast.makeText(this, "Gagal mengirim pesan, coba lagi.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String messageId = UUID.randomUUID().toString();
         long timestamp = System.currentTimeMillis();
         Message message = new Message(messageId, currentUser.getUid(), messageText, timestamp);
         messageInput.setText("");
-        db.collection("chats").document(chatId).collection("messages")
-                .document(messageId).set(message);
+
+        // --- LOGIKA BARU UNTUK UPDATE DOKUMEN CHAT ---
+        DocumentReference chatRef = db.collection("chats").document(chatId);
+
+        // Siapkan data untuk update di dokumen chat induk
+        Map<String, Object> chatData = new HashMap<>();
+        chatData.put("lastMessage", messageText);
+        chatData.put("lastMessageTime", timestamp);
+        // Simpan juga ID kedua partisipan untuk mempermudah query nanti
+        chatData.put("participants", Arrays.asList(currentUser.getUid(), receiverUid));
+
+        // Gunakan .set() dengan SetOptions.merge() untuk membuat dokumen jika belum ada,
+        // atau memperbaruinya jika sudah ada.
+        chatRef.set(chatData, SetOptions.merge());
+
+        // Simpan pesan ke sub-koleksi 'messages'
+        chatRef.collection("messages").document(messageId).set(message);
     }
 
     private void loadMessages() {

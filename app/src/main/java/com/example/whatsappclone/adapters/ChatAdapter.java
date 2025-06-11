@@ -1,88 +1,87 @@
 package com.example.whatsappclone.adapters;
 
 import android.content.Context;
-import android.content.Intent;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
-import android.view.ViewGroup;
 import android.view.View;
-import android.widget.ImageView;
+import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.example.whatsappclone.R;
 import com.example.whatsappclone.models.ChatItem;
-import com.example.whatsappclone.ui.ChatActivity;
-
-import java.util.Date;
+import com.example.whatsappclone.utils.TimeAgo;
 import java.util.List;
+import de.hdodenhof.circleimageview.CircleImageView;
 
+public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
 
-public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
+    private final Context context;
+    private final List<ChatItem> chatList;
+    private final OnChatItemClickListener listener;
 
-    private Context context;
-    private List<ChatItem> chatItems;
-    private OnItemClickListener listener;
-
-    public interface OnItemClickListener {
-        void onItemClick(ChatItem chatItem);
+    public interface OnChatItemClickListener {
+        void onChatItemClick(ChatItem chatItem);
     }
 
-    public ChatAdapter(Context context, List<ChatItem> chatItems, OnItemClickListener listener) {
+    public ChatAdapter(Context context, List<ChatItem> chatList, OnChatItemClickListener listener) {
         this.context = context;
-        this.chatItems = chatItems;
+        this.chatList = chatList;
         this.listener = listener;
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ChatViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_chat, parent, false);
-        return new ViewHolder(view);
+        return new ChatViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ChatItem item = chatItems.get(position);
-        holder.chatName.setText(item.getName());
-        holder.chatLastMessage.setText(item.getLastMessage());
-
-        String time = DateFormat.format("hh:mm a", new Date(item.getLastMessageTime())).toString();
-        holder.chatTime.setText(time);
-
-        Glide.with(context)
-                .load(item.getPhotoUrl())
-                .placeholder(R.drawable.ic_account_profile)
-                .circleCrop()
-                .into(holder.chatProfileImage);
-
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onItemClick(item);
-            }
-        });
+    public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
+        ChatItem currentItem = chatList.get(position);
+        holder.bind(currentItem, listener);
     }
 
     @Override
     public int getItemCount() {
-        return chatItems.size();
+        return chatList.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView chatProfileImage;
-        TextView chatName, chatLastMessage, chatTime;
+    static class ChatViewHolder extends RecyclerView.ViewHolder {
+        CircleImageView profilePic;
+        TextView userName, lastMessage, lastMessageTime;
 
-        public ViewHolder(@NonNull View itemView) {
+        public ChatViewHolder(@NonNull View itemView) {
             super(itemView);
-            chatProfileImage = itemView.findViewById(R.id.chatProfileImage);
-            chatName = itemView.findViewById(R.id.chatName);
-            chatLastMessage = itemView.findViewById(R.id.chatLastMessage);
-            chatTime = itemView.findViewById(R.id.chatTime);
+
+            // --- PERBAIKAN DI SINI ---
+            // Menggunakan ID yang benar dari item_chat.xml
+            profilePic = itemView.findViewById(R.id.iv_profile_pic_chat_item);
+            userName = itemView.findViewById(R.id.tv_user_name_chat_item);
+            lastMessage = itemView.findViewById(R.id.tv_last_message);
+            lastMessageTime = itemView.findViewById(R.id.tv_last_message_time);
+        }
+
+        public void bind(final ChatItem chatItem, final OnChatItemClickListener listener) {
+            userName.setText(chatItem.getName());
+            lastMessage.setText(chatItem.getLastMessage());
+
+            if (chatItem.getLastMessageTime() > 0) {
+                lastMessageTime.setText(TimeAgo.getTimeAgo(chatItem.getLastMessageTime()));
+            } else {
+                lastMessageTime.setText("");
+            }
+
+            if (chatItem.getPhotoUrl() != null && !chatItem.getPhotoUrl().isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(chatItem.getPhotoUrl())
+                        .placeholder(R.mipmap.ic_launcher)
+                        .into(profilePic);
+            } else {
+                profilePic.setImageResource(R.mipmap.ic_launcher);
+            }
+            itemView.setOnClickListener(v -> listener.onChatItemClick(chatItem));
         }
     }
 }
-
-

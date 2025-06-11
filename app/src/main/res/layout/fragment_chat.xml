@@ -7,35 +7,40 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
-        android:id="@+id/userInfoContainer"
+    <!-- BAGIAN HEADER PROFIL PENGGUNA -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/header_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        android:gravity="center_vertical">
+        android:layout_alignParentTop="true"
+        app:cardElevation="4dp">
 
-        <ImageView
-            android:id="@+id/userPhoto"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_launcher_background"
-            android:scaleType="centerCrop"
-            android:layout_marginEnd="12dp"
-            android:background="@drawable/circle_bg" />
-
-        <TextView
-            android:id="@+id/userName"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nama Pengguna"
-            android:textSize="18sp"
-            android:textColor="@android:color/black"
-            android:textStyle="bold" />
-    </LinearLayout>
+            android:padding="16dp">
 
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/user_photo_header"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_centerVertical="true"
+                android:src="@mipmap/ic_launcher" />
 
+            <TextView
+                android:id="@+id/user_name_header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:layout_toEndOf="@id/user_photo_header"
+                android:text="Memuat nama..."
+                android:textColor="@android:color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
 
     <!-- Search Bar -->
     <androidx.cardview.widget.CardView
@@ -94,14 +99,6 @@
 
     </com.google.android.material.tabs.TabLayout>
 
-    <!-- List of Chats -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewUsers"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"/>
-
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
@@ -109,4 +106,17 @@
         android:layout_weight="1"
         android:padding="8dp"
         android:clipToPadding="false"/>
+
+    <!-- Tombol Chat Baru (FAB) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_new_chat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_chat_add"
+        app:tint="@android:color/white"
+        android:contentDescription="Mulai Chat Baru" />
+
 </LinearLayout>

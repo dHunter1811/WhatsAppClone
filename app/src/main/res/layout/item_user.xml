@@ -1,34 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    card_view:cardCornerRadius="8dp"
-    android:layout_margin="8dp">
+    android:padding="16dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:orientation="horizontal"
-        android:padding="8dp"
-        android:gravity="center_vertical">
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/civ_user_photo"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_centerVertical="true"
+        android:src="@mipmap/ic_launcher" />
 
-        <ImageView
-            android:id="@+id/userPhoto"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_account_profile"
-            android:layout_marginEnd="12dp"
-            android:background="@drawable/circle_bg" />
+    <TextView
+        android:id="@+id/tv_user_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="16dp"
+        android:layout_toEndOf="@id/civ_user_photo"
+        android:text="Nama Pengguna"
+        android:textColor="@android:color/black"
+        android:textSize="18sp" />
 
-        <TextView
-            android:id="@+id/userName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="User Name"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-    </LinearLayout>
-</androidx.cardview.widget.CardView>
+</RelativeLayout>
