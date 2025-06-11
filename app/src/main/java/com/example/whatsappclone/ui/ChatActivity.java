@@ -24,6 +24,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
@@ -203,14 +204,25 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void loadMessages() {
-        // ... (kode loadMessages tetap sama seperti sebelumnya)
         CollectionReference messagesRef = db.collection("chats").document(chatId).collection("messages");
+
         messagesRef.orderBy("timestamp", Query.Direction.ASCENDING)
                 .addSnapshotListener((snapshots, error) -> {
-                    if (error != null) return;
+                    if (error != null) { return; }
+
                     if (snapshots != null) {
                         messageList.clear();
-                        messageList.addAll(snapshots.toObjects(Message.class));
+                        for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                            Message message = doc.toObject(Message.class);
+                            if (message != null) {
+                                // --- LOGIKA BARU UNTUK MENANDAI SEBAGAI DIBACA ---
+                                if (!message.getSenderId().equals(currentUser.getUid()) && !message.isRead()) {
+                                    // Jika pesan dari lawan bicara dan belum dibaca, update di Firestore
+                                    doc.getReference().update("read", true);
+                                }
+                                messageList.add(message);
+                            }
+                        }
                         messageAdapter.notifyDataSetChanged();
                         messagesRecyclerView.scrollToPosition(messageList.size() - 1);
                     }

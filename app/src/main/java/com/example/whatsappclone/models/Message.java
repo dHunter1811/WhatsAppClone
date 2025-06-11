@@ -6,6 +6,7 @@ public class Message {
     private String senderId;
     private String message;
     private long timestamp;
+    private boolean read; // <-- FIELD BARU
 
     public Message() {
         // Diperlukan untuk Firebase
@@ -16,40 +17,26 @@ public class Message {
         this.senderId = senderId;
         this.message = message;
         this.timestamp = timestamp;
+        this.read = false; // <-- Nilai default saat dibuat
     }
 
-    // --- Buat Getter dan Setter untuk semua properti di atas ---
-    // (Klik kanan -> Generate -> Getter and Setter -> Select All)
+    // --- Getter dan Setter lainnya ... ---
 
-    public String getMessageId() {
-        return messageId;
+    public String getMessageId() { return messageId; }
+    public void setMessageId(String messageId) { this.messageId = messageId; }
+    public String getSenderId() { return senderId; }
+    public void setSenderId(String senderId) { this.senderId = senderId; }
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
+    public long getTimestamp() { return timestamp; }
+    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+
+    // --- Getter dan Setter untuk field baru ---
+    public boolean isRead() {
+        return read;
     }
 
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
-    }
-
-    public String getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(String senderId) {
-        this.senderId = senderId;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+    public void setRead(boolean read) {
+        this.read = read;
     }
 }

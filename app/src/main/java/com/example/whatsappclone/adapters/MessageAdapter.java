@@ -5,9 +5,11 @@ import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.whatsappclone.R;
@@ -36,47 +38,42 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         this.isGroupChat = isGroupChat;
     }
 
-    // --- PERBAIKAN UTAMA ADA DI SINI ---
+    // --- ViewHolder untuk setiap tipe pesan ---
 
-    // ViewHolder untuk pesan terkirim
     static class SentMessageViewHolder extends RecyclerView.ViewHolder {
         TextView messageText, messageTime;
+        ImageView readStatusIcon;
         public SentMessageViewHolder(@NonNull View itemView) {
-            super(itemView); // Memanggil konstruktor superclass dengan View
+            super(itemView);
             messageText = itemView.findViewById(R.id.tv_message_text);
             messageTime = itemView.findViewById(R.id.tv_message_time);
+            readStatusIcon = itemView.findViewById(R.id.iv_read_status);
         }
     }
 
-    // ViewHolder untuk pesan diterima (1-on-1)
     static class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
         TextView messageText, messageTime;
         public ReceivedMessageViewHolder(@NonNull View itemView) {
-            super(itemView); // Memanggil konstruktor superclass dengan View
+            super(itemView);
             messageText = itemView.findViewById(R.id.tv_message_text);
             messageTime = itemView.findViewById(R.id.tv_message_time);
         }
     }
 
-    // ViewHolder untuk pesan diterima di grup
     static class GroupReceivedMessageViewHolder extends RecyclerView.ViewHolder {
         TextView messageText, messageTime, senderName;
         public GroupReceivedMessageViewHolder(@NonNull View itemView) {
-            super(itemView); // Memanggil konstruktor superclass dengan View
+            super(itemView);
             messageText = itemView.findViewById(R.id.tv_message_text);
             messageTime = itemView.findViewById(R.id.tv_message_time);
             senderName = itemView.findViewById(R.id.tv_sender_name);
         }
     }
 
-    // --- SISA KODE TETAP SAMA ---
-
     @Override
     public int getItemViewType(int position) {
         Message message = messageList.get(position);
-        // Cek null untuk getCurrentUser() untuk keamanan
         if (FirebaseAuth.getInstance().getCurrentUser() == null) return VIEW_TYPE_RECEIVED;
-
         boolean isSender = message.getSenderId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         if (isSender) {
@@ -101,25 +98,40 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
+    // --- PERBAIKAN UTAMA ADA DI METODE INI ---
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Message message = messageList.get(position);
         String time = DateFormat.format("HH:mm", message.getTimestamp()).toString();
 
         switch (holder.getItemViewType()) {
-            case VIEW_TYPE_SENT:
-                ((SentMessageViewHolder) holder).messageText.setText(message.getMessage());
-                ((SentMessageViewHolder) holder).messageTime.setText(time);
+            case VIEW_TYPE_SENT: { // Menggunakan kurung kurawal untuk mendefinisikan scope
+                SentMessageViewHolder sentHolder = (SentMessageViewHolder) holder;
+                sentHolder.messageText.setText(message.getMessage());
+                sentHolder.messageTime.setText(time);
+
+                if (message.isRead()) {
+                    sentHolder.readStatusIcon.setVisibility(View.VISIBLE);
+                    // Tambahkan null check untuk context demi keamanan
+                    if (context != null) {
+                        sentHolder.readStatusIcon.setColorFilter(ContextCompat.getColor(context, R.color.blue_tick_color));
+                    }
+                } else {
+                    sentHolder.readStatusIcon.setVisibility(View.GONE);
+                }
                 break;
-            case VIEW_TYPE_RECEIVED:
-                ((ReceivedMessageViewHolder) holder).messageText.setText(message.getMessage());
-                ((ReceivedMessageViewHolder) holder).messageTime.setText(time);
+            }
+            case VIEW_TYPE_RECEIVED: {
+                ReceivedMessageViewHolder receivedHolder = (ReceivedMessageViewHolder) holder;
+                receivedHolder.messageText.setText(message.getMessage());
+                receivedHolder.messageTime.setText(time);
                 break;
-            case VIEW_TYPE_RECEIVED_GROUP:
+            }
+            case VIEW_TYPE_RECEIVED_GROUP: {
                 GroupReceivedMessageViewHolder groupHolder = (GroupReceivedMessageViewHolder) holder;
                 groupHolder.messageText.setText(message.getMessage());
                 groupHolder.messageTime.setText(time);
-                // Ambil nama pengirim dari Firestore
+
                 FirebaseFirestore.getInstance().collection("users").document(message.getSenderId()).get()
                         .addOnSuccessListener(documentSnapshot -> {
                             if (documentSnapshot.exists()) {
@@ -130,6 +142,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                             }
                         });
                 break;
+            }
         }
     }
 
