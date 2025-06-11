@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'com.example.whatsappclone' // Ganti dengan namespace Anda jika berbeda
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.example.whatsappclone" // Ganti jika berbeda
         minSdk 24
-        targetSdk 34
+        targetSdk 35
         versionCode 1
         versionName "1.0"
 
@@ -52,6 +52,7 @@ dependencies {
 
     // Library Panggilan Video
     implementation 'io.agora.rtc:full-sdk:4.5.0'
+    implementation libs.activity
 
 
     // Dependensi standar lainnya

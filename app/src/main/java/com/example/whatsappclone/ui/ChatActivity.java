@@ -70,7 +70,7 @@ public class ChatActivity extends AppCompatActivity {
         messageInput = findViewById(R.id.et_message_input);
         sendMessageButton = findViewById(R.id.btn_send_message);
         messageList = new ArrayList<>();
-        messageAdapter = new MessageAdapter(this, messageList);
+        messageAdapter = new MessageAdapter(this, messageList, false);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
         messagesRecyclerView.setLayoutManager(layoutManager);

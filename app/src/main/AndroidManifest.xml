@@ -18,6 +18,15 @@
         android:theme="@style/Theme.WhatsAppClone"
         tools:targetApi="31">
         <activity
+            android:name=".ui.GroupChatActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.CreateGroupInfoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.SelectMembersActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.IncomingCallActivity"
             android:exported="false" />
         <activity
