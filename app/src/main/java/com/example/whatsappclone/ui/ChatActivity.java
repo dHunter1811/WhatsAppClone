@@ -39,6 +39,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import java.util.Random;
+import java.util.Arrays;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -46,6 +48,9 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView messagesRecyclerView;
     private EditText messageInput;
     private ImageButton sendMessageButton;
+
+    private ImageButton btnPantun; // <-- Variabel baru untuk tombol pantun
+
 
     // Custom Toolbar Views
     private CircleImageView civProfileImage;
@@ -110,6 +115,8 @@ public class ChatActivity extends AppCompatActivity {
         messagesRecyclerView = findViewById(R.id.rv_messages);
         messageInput = findViewById(R.id.et_message_input);
         sendMessageButton = findViewById(R.id.btn_send_message);
+        btnPantun = findViewById(R.id.btn_pantun); // <-- Inisialisasi tombol baru
+
     }
 
     private void initFirebase() {
@@ -130,6 +137,7 @@ public class ChatActivity extends AppCompatActivity {
     private void setupClickListeners() {
         ivBackArrow.setOnClickListener(v -> finish());
         sendMessageButton.setOnClickListener(v -> sendMessage());
+        btnPantun.setOnClickListener(v -> generateRandomPantun());
         ivVideoCall.setOnClickListener(v -> initiateCall("video"));
         ivCall.setOnClickListener(v -> initiateCall("voice"));
         ivMore.setOnClickListener(v -> Toast.makeText(this, "Opsi lain diklik", Toast.LENGTH_SHORT).show());
@@ -274,5 +282,42 @@ public class ChatActivity extends AppCompatActivity {
                 });
     }
 
-    // HAPUS metode onCreateOptionsMenu dan onOptionsItemSelected dari sini
+    // --- DAFTAR PANTUN KITA ---
+    private final List<String> pantunList = Arrays.asList(
+            // Pantun romantis
+            "Waktu daftar hari terakhir,\nWaktu terasa banyak terbuang.\nKamu nggak perlu khawatir,\nCintaku hanya untukmu seorang.",
+            "Api kecil dari tungku,\nApinya kecil habis kayu.\nSudah lama kutunggu-tunggu,\nKapan kamu bilang i love you.",
+            "Ayam goreng setengah mateng,\nBelinya di depan tugu.\nAbang sayang, abangku ganteng,\nNeng di sini setia menunggu.",
+            "Jalanan lagi lancar,\nItu adalah sebuah berkah.\nAku bukan nyari pacar,\nTapi, nyari yang mau diajak nikah.",
+            "Minum sekoteng hangat rasanya,\nMinum segelas ada yang minta.\nLaki-laki ganteng siapa yang punya?\nBolehkah aku jatuh cinta?",
+
+            // Pantun lucu absurd
+            "Bocah kecil suka bermain,\nMainannya boneka musang.\nJangan suka bergantung pada orang lain,\nApalagi bergantung sambil makan pisang.",
+            "Keluarga besar banyak anak,\nSalah satu anak namanya Wawa.\nBersikaplah mirip kuntilanak,\nSenang duka selalu tertawa.",
+            "Pagi hari minum jamu,\nBiar kuat, banyak tenaga.\nJanganlah menuntut ilmu,\nKarena ilmu tidak bersalah.",
+            "Pergi ke Solo menonton wayang,\nTidak lupa membawa bekal.\nBanyak uang aku disayang,\nTak ada uang, malah ditinggal.",
+            "Jalan-jalan ke pinggir empang,\nNemu katak di pinggir empang.\nHati siapa tak bimbang,\nKamu botak minta dikepang.",
+
+            // Pantun pendidikan / bijak
+            "Pergi ke pantai melihat laut biru,\nPemandangannya indah membuat hati penuh warna.\nEngkau masih kecil tuntutlah ilmu,\nSebagai bekal kelak saat dewasa.",
+            "Bungkuslah ikan dengan kertas,\nLalu ditaruh di atas talas.\nJika pendidikan berkualitas,\nPasti jadi bangsa berkelas.",
+            "Jika perahu sudah melaju,\nMari kita banyak berdoa.\nJika ingin negeri maju,\nPendidikan harus utama.",
+            "Tubuh letih usah dipaksakan,\nNanti sakit sekujur tubuh.\nPendidikan jangan disia-siakan,\nItulah jalan menuju maju.",
+            "Luas padang rerumputan,\nAda domba banyak delapan.\nPendidikan ibarat jembatan,\nJembatan menuju masa depan."
+    );
+
+    private final Random random = new Random();
+
+    private void generateRandomPantun() {
+        if (pantunList.isEmpty()) return;
+
+        // Pilih pantun acak dari daftar
+        int randomIndex = random.nextInt(pantunList.size());
+        String pantun = pantunList.get(randomIndex);
+
+        // Masukkan pantun ke dalam kolom input
+        messageInput.setText(pantun);
+        // Pindahkan kursor ke akhir teks
+        messageInput.setSelection(pantun.length());
+    }
 }

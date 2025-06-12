@@ -135,6 +135,16 @@
             android:maxLines="5"
             android:padding="12dp" />
 
+        <!-- TOMBOL BARU UNTUK PANTUN -->
+        <ImageButton
+            android:id="@+id/btn_pantun"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Kirim Pantun Acak"
+            android:src="@drawable/ic_pantun"
+            app:tint="@android:color/darker_gray" />
+
         <ImageButton
             android:id="@+id/btn_send_message"
             android:layout_width="48dp"
