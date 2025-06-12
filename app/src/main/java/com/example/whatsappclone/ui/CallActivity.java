@@ -191,7 +191,7 @@ public class CallActivity extends AppCompatActivity {
     }
 
     private void saveCallToHistory(Call callData) {
-        // Buat entri riwayat untuk Penelepon (outgoing)
+        // Selalu buat entri riwayat untuk Penelepon (siapa pun yang memulai panggilan)
         String callerHistoryId = UUID.randomUUID().toString();
         CallHistory callerHistory = new CallHistory(
                 callerHistoryId,
@@ -205,19 +205,22 @@ public class CallActivity extends AppCompatActivity {
         FirebaseFirestore.getInstance().collection("users").document(callData.getCallerId())
                 .collection("call_history").document(callerHistoryId).set(callerHistory);
 
-        // Buat entri riwayat untuk Penerima (incoming)
-        String receiverHistoryId = UUID.randomUUID().toString();
-        CallHistory receiverHistory = new CallHistory(
-                receiverHistoryId,
-                callData.getCallerId(),
-                callData.getCallerName(),
-                callData.getCallerPhotoUrl(),
-                System.currentTimeMillis(),
-                callData.getCallType(),
-                "incoming"
-        );
-        FirebaseFirestore.getInstance().collection("users").document(callData.getReceiverId())
-                .collection("call_history").document(receiverHistoryId).set(receiverHistory);
+        // --- PERBAIKAN PENTING DI SINI ---
+        // Hanya buat entri riwayat untuk Penerima jika ia BUKAN orang yang sama
+        if (!callData.getCallerId().equals(callData.getReceiverId())) {
+            String receiverHistoryId = UUID.randomUUID().toString();
+            CallHistory receiverHistory = new CallHistory(
+                    receiverHistoryId,
+                    callData.getCallerId(),
+                    callData.getCallerName(),
+                    callData.getCallerPhotoUrl(),
+                    System.currentTimeMillis(),
+                    callData.getCallType(),
+                    "incoming"
+            );
+            FirebaseFirestore.getInstance().collection("users").document(callData.getReceiverId())
+                    .collection("call_history").document(receiverHistoryId).set(receiverHistory);
+        }
     }
 
     private void leaveChannel() {
