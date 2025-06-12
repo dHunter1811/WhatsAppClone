@@ -1,29 +1,48 @@
 package com.example.whatsappclone.models;
 
-public class User {
-    private String uid;
+import java.io.Serializable;
+
+public class User implements Serializable {
+
+    // Nama variabel dibuat konsisten
+    private String userId;
     private String name;
-    private String photoUrl;
+    private String profileImageUrl;
 
     public User() {
         // Diperlukan untuk Firebase
     }
 
-    public User(String uid, String name, String photoUrl) {
-        this.uid = uid;
+    public User(String userId, String name, String profileImageUrl) {
+        this.userId = userId;
         this.name = name;
-        this.photoUrl = photoUrl;
+        this.profileImageUrl = profileImageUrl;
     }
 
-    public String getUid() {
-        return uid;
+    // --- GETTER DAN SETTER DIPERBAIKI AGAR KONSISTEN ---
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getPhotoUrl() {
-        return photoUrl;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    // Nama setter ini sekarang cocok dengan field di Firestore
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 }

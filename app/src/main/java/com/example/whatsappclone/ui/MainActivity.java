@@ -1,15 +1,21 @@
 package com.example.whatsappclone.ui;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.whatsappclone.R;
@@ -71,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Panggil listener untuk panggilan masuk di akhir onCreate
         listenForIncomingCalls();
+        askNotificationPermission();
     }
 
     // --- BAGIAN KODE BARU UNTUK MENDENGARKAN PANGGILAN MASUK ---
@@ -162,5 +169,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         updateUserStatus("Terakhir aktif: " + DateFormat.format("HH:mm", System.currentTimeMillis()).toString());
+    }
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    // Izin diberikan
+                } else {
+                    // Izin ditolak
+                }
+            });
+
+    private void askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
     }
 }

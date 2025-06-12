@@ -16,6 +16,7 @@ import com.example.whatsappclone.models.User;
 import com.example.whatsappclone.utils.TimeAgo;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.List;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class CallHistoryAdapter extends RecyclerView.Adapter<CallHistoryAdapter.CallHistoryViewHolder> {
 
@@ -38,34 +39,34 @@ public class CallHistoryAdapter extends RecyclerView.Adapter<CallHistoryAdapter.
     public void onBindViewHolder(@NonNull CallHistoryViewHolder holder, int position) {
         CallHistory history = callHistoryList.get(position);
 
+        // ... (kode untuk waktu, jenis panggilan, dan arah panggilan tetap sama) ...
         holder.callTime.setText(TimeAgo.getTimeAgo(history.getTimestamp()));
-
-        // Set ikon jenis panggilan (video/suara)
         if ("video".equals(history.getCallType())) {
             holder.callBackType.setImageResource(R.drawable.ic_videocam);
         } else {
             holder.callBackType.setImageResource(R.drawable.ic_calls);
         }
-
-        // Set ikon arah panggilan (masuk/keluar)
         if ("outgoing".equals(history.getCallDirection())) {
             holder.callDirection.setImageResource(R.drawable.ic_call_made);
             holder.callDirection.setColorFilter(ContextCompat.getColor(context, android.R.color.holo_green_dark));
         } else {
             holder.callDirection.setImageResource(R.drawable.ic_call_received);
             holder.callDirection.setColorFilter(ContextCompat.getColor(context, android.R.color.holo_green_dark));
-            // Anda bisa ubah warnanya jadi merah jika panggilan tak terjawab
         }
 
-        // Ambil data pengguna lain dari Firestore
         FirebaseFirestore.getInstance().collection("users").document(history.getOtherUserId()).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         User user = documentSnapshot.toObject(User.class);
                         if (user != null) {
                             holder.userName.setText(user.getName());
-                            if (user.getPhotoUrl() != null && !user.getPhotoUrl().isEmpty()) {
-                                Glide.with(context).load(user.getPhotoUrl()).into(holder.userPhoto);
+
+                            // --- PERBAIKAN DI SINI ---
+                            // Menggunakan nama metode yang benar: getProfileImageUrl()
+                            if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
+                                Glide.with(context).load(user.getProfileImageUrl()).into(holder.userPhoto);
+                            } else {
+                                holder.userPhoto.setImageResource(R.mipmap.ic_launcher);
                             }
                         }
                     }
@@ -78,7 +79,8 @@ public class CallHistoryAdapter extends RecyclerView.Adapter<CallHistoryAdapter.
     }
 
     static class CallHistoryViewHolder extends RecyclerView.ViewHolder {
-        ImageView userPhoto, callDirection, callBackType;
+        CircleImageView userPhoto;
+        ImageView callDirection, callBackType;
         TextView userName, callTime;
         public CallHistoryViewHolder(@NonNull View itemView) {
             super(itemView);

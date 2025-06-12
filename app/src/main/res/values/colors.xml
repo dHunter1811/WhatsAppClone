@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Palet Warna Hijau WhatsApp -->
+    <color name="wa_green_dark">#075E54</color> <!-- Untuk Toolbar & Status Bar -->
+    <color name="wa_green_primary">#128C7E</color> <!-- Warna utama yang sedikit lebih terang -->
+    <color name="wa_green_accent">#25D366</color> <!-- Untuk Tombol FAB & Highlight -->
+    <color name="wa_green_light_chat">#DCF8C6</color> <!-- Untuk gelembung chat terkirim -->
+
+    <!-- Warna standar -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="whatsapp_green">#075E54</color>
 
-    <color name="purple_700">#FF3700B3</color>
+    <!-- Warna lain yang sudah kita gunakan -->
     <color name="blue_tick_color">#34B7F1</color>
-
-
-
+    <color name="purple_700">#FF3700B3</color>
 </resources>

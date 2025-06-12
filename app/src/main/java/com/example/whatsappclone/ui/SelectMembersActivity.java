@@ -58,7 +58,7 @@ public class SelectMembersActivity extends AppCompatActivity {
 
             ArrayList<String> selectedUserIds = new ArrayList<>();
             for (User user : selectedUsers) {
-                selectedUserIds.add(user.getUid());
+                selectedUserIds.add(user.getUserId());
             }
 
             // Pindah ke activity berikutnya untuk memberi info grup

@@ -7,8 +7,6 @@ public class ChatItem {
     private String lastMessage;
     private long lastMessageTime;
 
-    public ChatItem() {}
-
     public ChatItem(String uid, String name, String photoUrl, String lastMessage, long lastMessageTime) {
         this.uid = uid;
         this.name = name;
@@ -17,11 +15,45 @@ public class ChatItem {
         this.lastMessageTime = lastMessageTime;
     }
 
-    public String getUid() { return uid; }
-    public String getName() { return name; }
-    public String getPhotoUrl() { return photoUrl; }
-    public String getLastMessage() { return lastMessage; }
-    public long getLastMessageTime() { return lastMessageTime; }
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
+    public String getLastMessage() {
+        return lastMessage;
+    }
+
+    public void setLastMessage(String lastMessage) {
+        this.lastMessage = lastMessage;
+    }
+
+    public long getLastMessageTime() {
+        return lastMessageTime;
+    }
+
+    public void setLastMessageTime(long lastMessageTime) {
+        this.lastMessageTime = lastMessageTime;
+    }
 }
 
 

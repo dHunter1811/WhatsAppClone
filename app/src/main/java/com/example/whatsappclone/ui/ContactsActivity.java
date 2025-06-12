@@ -51,7 +51,13 @@ public class ContactsActivity extends AppCompatActivity {
                         userList.clear();
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             if (!document.getId().equals(currentUserId)) {
+                                // Buat objek User dari dokumen
                                 User user = document.toObject(User.class);
+
+                                // --- PERBAIKAN PENTING DI SINI ---
+                                // Set UID secara manual dari ID dokumen
+                                user.setUserId(document.getId());
+
                                 userList.add(user);
                             }
                         }

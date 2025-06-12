@@ -1,6 +1,7 @@
 package com.example.whatsappclone.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.whatsappclone.R;
 import com.example.whatsappclone.models.ChatItem;
+import com.example.whatsappclone.ui.ChatActivity;
 import com.example.whatsappclone.utils.TimeAgo;
 import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -54,33 +56,31 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
 
         public ChatViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            // --- PERBAIKAN DI SINI ---
-            // Menggunakan ID yang benar dari item_chat.xml
             profilePic = itemView.findViewById(R.id.iv_profile_pic_chat_item);
             userName = itemView.findViewById(R.id.tv_user_name_chat_item);
             lastMessage = itemView.findViewById(R.id.tv_last_message);
             lastMessageTime = itemView.findViewById(R.id.tv_last_message_time);
         }
 
+        // --- PERBAIKAN DI SINI ---
         public void bind(final ChatItem chatItem, final OnChatItemClickListener listener) {
             userName.setText(chatItem.getName());
             lastMessage.setText(chatItem.getLastMessage());
-
             if (chatItem.getLastMessageTime() > 0) {
                 lastMessageTime.setText(TimeAgo.getTimeAgo(chatItem.getLastMessageTime()));
             } else {
                 lastMessageTime.setText("");
             }
-
             if (chatItem.getPhotoUrl() != null && !chatItem.getPhotoUrl().isEmpty()) {
                 Glide.with(itemView.getContext())
-                        .load(chatItem.getPhotoUrl())
+                        .load(chatItem.getPhotoUrl()) // <-- PASTIKAN INI BENAR
                         .placeholder(R.mipmap.ic_launcher)
                         .into(profilePic);
             } else {
                 profilePic.setImageResource(R.mipmap.ic_launcher);
             }
+
+            // Saat item diklik, panggil listener yang ada di ChatFragment
             itemView.setOnClickListener(v -> listener.onChatItemClick(chatItem));
         }
     }

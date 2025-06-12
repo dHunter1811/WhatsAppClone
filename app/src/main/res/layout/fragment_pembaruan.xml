@@ -20,6 +20,7 @@
         android:layout_margin="16dp"
         android:src="@drawable/ic_camera"
         app:tint="@android:color/white"
+        app:backgroundTint="@color/wa_green_accent"
         android:contentDescription="Tambah Status Baru" />
 
 </RelativeLayout>

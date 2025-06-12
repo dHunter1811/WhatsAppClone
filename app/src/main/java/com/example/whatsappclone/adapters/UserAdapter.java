@@ -37,15 +37,17 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         User user = userList.get(position);
         holder.userName.setText(user.getName());
 
-        if (user.getPhotoUrl() != null && !user.getPhotoUrl().isEmpty()) {
-            Glide.with(context).load(user.getPhotoUrl()).into(holder.userPhoto);
+        if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
+            Glide.with(context).load(user.getProfileImageUrl()).into(holder.userPhoto);
         } else {
             holder.userPhoto.setImageResource(R.mipmap.ic_launcher);
         }
 
+        // --- PERBAIKAN DI SINI ---
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, ChatActivity.class);
-            intent.putExtra("chatUid", user.getUid());
+            // Pastikan Anda mengirim dengan kunci "chatUid" dan "chatName"
+            intent.putExtra("chatUid", user.getUserId());
             intent.putExtra("chatName", user.getName());
             context.startActivity(intent);
         });
@@ -59,10 +61,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     static class UserViewHolder extends RecyclerView.ViewHolder {
         CircleImageView userPhoto;
         TextView userName;
-
         public UserViewHolder(@NonNull View itemView) {
             super(itemView);
-            // PASTIKAN KEDUA ID INI SAMA DENGAN DI item_user.xml
             userPhoto = itemView.findViewById(R.id.civ_user_photo);
             userName = itemView.findViewById(R.id.tv_user_name);
         }

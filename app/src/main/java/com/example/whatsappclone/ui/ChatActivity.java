@@ -11,7 +11,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,26 +29,30 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import com.google.firebase.firestore.SetOptions;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
 
-    // ... (variabel UI, Firebase, dan Data lainnya tetap sama) ...
-    private CircleImageView civProfileImage;
-    private TextView tvUsername, tvOnlineStatus;
-    private ImageView ivBackArrow, ivVideoCall, ivCall, ivMore;
+    // UI Views
     private RecyclerView messagesRecyclerView;
     private EditText messageInput;
     private ImageButton sendMessageButton;
+
+    // Custom Toolbar Views
+    private CircleImageView civProfileImage;
+    private TextView tvUsername, tvOnlineStatus;
+    private ImageView ivBackArrow, ivVideoCall, ivCall, ivMore;
+
+    // Firebase & Data
     private FirebaseFirestore db;
     private FirebaseUser currentUser;
     private MessageAdapter messageAdapter;
@@ -54,16 +60,44 @@ public class ChatActivity extends AppCompatActivity {
     private String receiverUid;
     private String chatId;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        // ... (kode inisialisasi yang sudah ada di onCreate tetap sama) ...
+        // Ambil data dari Intent
         receiverUid = getIntent().getStringExtra("chatUid");
-        db = FirebaseFirestore.getInstance();
-        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        // --- PERBAIKAN PENTING: Pemeriksaan Keamanan ---
+        // Jika karena suatu alasan ID tidak terkirim, tutup activity ini
+        // agar tidak terjadi crash atau menampilkan halaman kosong.
+        if (receiverUid == null || receiverUid.isEmpty()) {
+            Toast.makeText(this, "Gagal membuka chat. Pengguna tidak valid.", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        // Inisialisasi semua komponen
+        initViews();
+        initFirebase();
+        setupRecyclerView();
+        setupClickListeners();
+
+        // Buat ID chat dan muat data
+        chatId = generateChatId(currentUser.getUid(), receiverUid);
+        loadReceiverInfo();
+        loadMessages();
+    }
+
+    private void initViews() {
+        // Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar_chat);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+
+        // Custom Toolbar Views
         civProfileImage = findViewById(R.id.civ_profile_image_toolbar);
         tvUsername = findViewById(R.id.tv_username_toolbar);
         tvOnlineStatus = findViewById(R.id.tv_online_status_toolbar);
@@ -71,33 +105,66 @@ public class ChatActivity extends AppCompatActivity {
         ivVideoCall = findViewById(R.id.iv_video_call);
         ivCall = findViewById(R.id.iv_call);
         ivMore = findViewById(R.id.iv_more);
+
+        // Main UI
         messagesRecyclerView = findViewById(R.id.rv_messages);
         messageInput = findViewById(R.id.et_message_input);
         sendMessageButton = findViewById(R.id.btn_send_message);
+    }
+
+    private void initFirebase() {
+        db = FirebaseFirestore.getInstance();
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+    }
+
+    private void setupRecyclerView() {
         messageList = new ArrayList<>();
+        // Mengirim 'false' karena ini bukan chat grup
         messageAdapter = new MessageAdapter(this, messageList, false);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        layoutManager.setStackFromEnd(true);
+        layoutManager.setStackFromEnd(true); // Pesan baru akan mendorong list ke atas
         messagesRecyclerView.setLayoutManager(layoutManager);
         messagesRecyclerView.setAdapter(messageAdapter);
-
-        if (currentUser != null && receiverUid != null) {
-            chatId = generateChatId(currentUser.getUid(), receiverUid);
-            loadReceiverInfo();
-            loadMessages();
-        }
-        setupClickListeners();
     }
 
     private void setupClickListeners() {
         ivBackArrow.setOnClickListener(v -> finish());
         sendMessageButton.setOnClickListener(v -> sendMessage());
-
-        // --- PERUBAHAN UTAMA DI SINI ---
         ivVideoCall.setOnClickListener(v -> initiateCall("video"));
         ivCall.setOnClickListener(v -> initiateCall("voice"));
-        ivMore.setOnClickListener(v -> Toast.makeText(this, "More options diklik", Toast.LENGTH_SHORT).show());
+        ivMore.setOnClickListener(v -> Toast.makeText(this, "Opsi lain diklik", Toast.LENGTH_SHORT).show());
     }
+
+    private void loadReceiverInfo() {
+        DocumentReference receiverRef = db.collection("users").document(receiverUid);
+        receiverRef.addSnapshotListener(this, (snapshot, error) -> {
+            if (error != null) { return; }
+
+            if (snapshot != null && snapshot.exists()) {
+                String name = snapshot.getString("name");
+                String photoUrl = snapshot.getString("profileImageUrl");
+
+                tvUsername.setText(name);
+
+                if (photoUrl != null && !photoUrl.isEmpty()) {
+                    Glide.with(this).load(photoUrl).into(civProfileImage);
+                } else {
+                    civProfileImage.setImageResource(R.mipmap.ic_launcher); // Gambar default
+                }
+
+                if (snapshot.contains("onlineStatus")) {
+                    String status = snapshot.getString("onlineStatus");
+                    tvOnlineStatus.setText(status);
+                    tvOnlineStatus.setVisibility(View.VISIBLE);
+                } else {
+                    tvOnlineStatus.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
+
+
 
     private void initiateCall(String callType) {
         if (currentUser == null || receiverUid == null) {
@@ -140,28 +207,6 @@ public class ChatActivity extends AppCompatActivity {
                                 .addOnFailureListener(e -> Toast.makeText(ChatActivity.this, "Gagal memulai panggilan.", Toast.LENGTH_SHORT).show());
                     }
                 });
-    }
-    private void loadReceiverInfo() {
-        // ... (kode loadReceiverInfo tetap sama seperti sebelumnya)
-        DocumentReference receiverRef = db.collection("users").document(receiverUid);
-        receiverRef.addSnapshotListener(this, (snapshot, error) -> {
-            if (error != null) { Log.e("ChatActivity", "Gagal mendengarkan status: ", error); return; }
-            if (snapshot != null && snapshot.exists()) {
-                String name = snapshot.getString("name");
-                tvUsername.setText(name);
-                String photoUrl = snapshot.getString("profileImageUrl");
-                if (photoUrl != null && !photoUrl.isEmpty()) {
-                    Glide.with(this).load(photoUrl).into(civProfileImage);
-                }
-                if (snapshot.contains("onlineStatus")) {
-                    String status = snapshot.getString("onlineStatus");
-                    tvOnlineStatus.setText(status);
-                    tvOnlineStatus.setVisibility(View.VISIBLE);
-                } else {
-                    tvOnlineStatus.setVisibility(View.GONE);
-                }
-            }
-        });
     }
 
     private String generateChatId(String uid1, String uid2) {

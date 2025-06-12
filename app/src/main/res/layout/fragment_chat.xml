@@ -117,6 +117,7 @@
         android:layout_margin="16dp"
         android:src="@drawable/ic_chat_add"
         app:tint="@android:color/white"
+        app:backgroundTint="@color/wa_green_accent"
         android:contentDescription="Mulai Chat Baru" />
 
 </LinearLayout>

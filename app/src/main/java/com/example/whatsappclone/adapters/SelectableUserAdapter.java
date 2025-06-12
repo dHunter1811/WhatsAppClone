@@ -62,13 +62,15 @@ public class SelectableUserAdapter extends RecyclerView.Adapter<SelectableUserAd
 
         void bind(final User user) {
             userName.setText(user.getName());
-            if (user.getPhotoUrl() != null && !user.getPhotoUrl().isEmpty()) {
-                Glide.with(context).load(user.getPhotoUrl()).into(userPhoto);
+
+            // --- PERBAIKAN DI SINI ---
+            // Menggunakan nama metode yang benar: getProfileImageUrl()
+            if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
+                Glide.with(context).load(user.getProfileImageUrl()).into(userPhoto);
             } else {
                 userPhoto.setImageResource(R.mipmap.ic_launcher);
             }
 
-            // Atur status checkbox berdasarkan daftar yang dipilih
             userCheckBox.setChecked(selectedUsers.contains(user));
 
             itemView.setOnClickListener(v -> {
