@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         if (itemId == R.id.action_camera) {
             Toast.makeText(this, "Kamera diklik", Toast.LENGTH_SHORT).show();
             return true;
-        } else if (itemId == R.id.action_logout) {
+        } else if (itemId == R.id.action_camera) {
             startActivity(new Intent(this, ContactsActivity.class));
             return true;
         } else if (itemId == R.id.action_logout) {
