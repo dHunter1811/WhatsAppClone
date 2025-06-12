@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -19,7 +20,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.whatsappclone.R;
-import com.example.whatsappclone.models.Call; // <-- Tambahkan import ini
+import com.example.whatsappclone.models.Call;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -28,11 +29,20 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-
+import com.google.firebase.messaging.FirebaseMessaging; // <-- Import penting
 
 public class MainActivity extends AppCompatActivity {
 
     BottomNavigationView bottomNavigationView;
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    Toast.makeText(this, "Izin notifikasi diberikan.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Anda mungkin tidak akan menerima notifikasi pesan.", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,15 +53,21 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        setupBottomNav();
 
-        // Set default fragment
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new ChatFragment())
                     .commit();
         }
 
-        // Listener untuk navigasi
+        // Jalankan semua fungsi startup
+        askNotificationPermission();
+        listenForIncomingCalls();
+        updateFCMToken();
+    }
+
+    private void setupBottomNav() {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
             int itemId = item.getItemId();
@@ -71,36 +87,43 @@ public class MainActivity extends AppCompatActivity {
                         .replace(R.id.fragment_container, selectedFragment)
                         .commit();
             }
-
             return true;
         });
-
-        // Panggil listener untuk panggilan masuk di akhir onCreate
-        listenForIncomingCalls();
-        askNotificationPermission();
     }
 
-    // --- BAGIAN KODE BARU UNTUK MENDENGARKAN PANGGILAN MASUK ---
-    private void listenForIncomingCalls() {
+    // --- METODE BARU UNTUK MENGAMBIL DAN MENYIMPAN TOKEN SECARA PROAKTIF ---
+    private void updateFCMToken() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) return;
 
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.w("MainActivity", "Gagal mengambil token FCM.", task.getException());
+                        return;
+                    }
+                    String token = task.getResult();
+                    Log.d("MainActivity", "Token FCM saat ini: " + token);
+
+                    // Simpan token ke dokumen pengguna di Firestore
+                    FirebaseFirestore.getInstance().collection("users")
+                            .document(currentUser.getUid())
+                            .update("fcmToken", token)
+                            .addOnSuccessListener(aVoid -> Log.d("MainActivity", "Token FCM berhasil disimpan di Firestore."))
+                            .addOnFailureListener(e -> Log.w("MainActivity", "Gagal memperbarui token FCM di Firestore.", e));
+                });
+    }
+
+    private void listenForIncomingCalls() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return;
         FirebaseFirestore.getInstance().collection("calls")
                 .whereEqualTo("receiverId", currentUser.getUid())
                 .whereEqualTo("status", "dialing")
                 .addSnapshotListener((snapshots, error) -> {
-                    if (error != null) {
-                        return;
-                    }
-
+                    if (error != null) { return; }
                     if (snapshots != null && !snapshots.isEmpty()) {
-                        // Ambil panggilan pertama yang ditemukan
                         Call incomingCall = snapshots.getDocuments().get(0).toObject(Call.class);
-
-                        // Hindari menampilkan layar panggilan jika sudah ada di dalam panggilan
-                        // (Logika ini bisa disempurnakan nanti)
-
-                        // Mulai IncomingCallActivity
                         Intent intent = new Intent(MainActivity.this, IncomingCallActivity.class);
                         intent.putExtra("callId", incomingCall.getCallId());
                         intent.putExtra("channelName", incomingCall.getCallId());
@@ -111,9 +134,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
-
-
-    // --- SISA KODE ANDA YANG SUDAH ADA ---
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -128,6 +148,9 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Kamera diklik", Toast.LENGTH_SHORT).show();
             return true;
         } else if (itemId == R.id.action_logout) {
+            startActivity(new Intent(this, ContactsActivity.class));
+            return true;
+        } else if (itemId == R.id.action_logout) {
             signOutUser();
             return true;
         }
@@ -135,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void signOutUser() {
-        updateUserStatus("Offline"); // Update status jadi offline sebelum logout
+        updateUserStatus("Offline");
         FirebaseAuth.getInstance().signOut();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
@@ -171,19 +194,9 @@ public class MainActivity extends AppCompatActivity {
         updateUserStatus("Terakhir aktif: " + DateFormat.format("HH:mm", System.currentTimeMillis()).toString());
     }
 
-    private final ActivityResultLauncher<String> requestPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    // Izin diberikan
-                } else {
-                    // Izin ditolak
-                }
-            });
-
     private void askNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
-                    PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             }
         }

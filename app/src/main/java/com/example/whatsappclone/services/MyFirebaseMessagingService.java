@@ -1,13 +1,16 @@
 package com.example.whatsappclone.services;
 
+import android.Manifest; // <-- Import baru
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.pm.PackageManager; // <-- Import baru
 import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat; // <-- Import baru
 
 import com.example.whatsappclone.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,7 +27,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
-        // Tampilkan notifikasi yang diterima
         if (remoteMessage.getNotification() != null) {
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
             showNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
@@ -35,7 +37,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onNewToken(@NonNull String token) {
         super.onNewToken(token);
         Log.d(TAG, "Refreshed token: " + token);
-        // Kirim token ini ke server (Firestore) Anda
         sendTokenToServer(token);
     }
 
@@ -61,12 +62,21 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.drawable.ic_chat_add) // Ganti dengan ikon notifikasi Anda
+                .setSmallIcon(R.drawable.ic_chat_add)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
-        notificationManager.notify(1, builder.build());
+        // --- PERBAIKAN UTAMA DI SINI ---
+        // Sebelum menampilkan notifikasi, periksa apakah aplikasi memiliki izin.
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            // Jika izin diberikan, tampilkan notifikasi.
+            notificationManager.notify(1, builder.build());
+        } else {
+            // Jika izin tidak diberikan, kita tidak bisa melakukan apa-apa.
+            // Cukup catat di log untuk debugging.
+            Log.w(TAG, "Izin POST_NOTIFICATIONS tidak diberikan, notifikasi tidak bisa ditampilkan.");
+        }
     }
 }
