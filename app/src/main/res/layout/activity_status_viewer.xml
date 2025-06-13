@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black"
-    tools:context=".ui.StatusViewerActivity">
+    tools:context=".status.StatusViewerActivity">
 
     <ImageView
         android:id="@+id/iv_story_image"
@@ -35,7 +35,7 @@
             android:id="@+id/iv_close_viewer"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:src="@drawable/ic_arrow_back"
+            android:src="@drawable/ic_nav_arrow_back"
             app:tint="@android:color/white" />
 
         <de.hdodenhof.circleimageview.CircleImageView

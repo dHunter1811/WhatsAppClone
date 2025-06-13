@@ -39,7 +39,7 @@
                 android:id="@+id/iv_call_direction"
                 android:layout_width="16dp"
                 android:layout_height="16dp"
-                android:src="@drawable/ic_call_made"/>
+                android:src="@drawable/ic_action_call_made"/>
 
             <TextView
                 android:id="@+id/tv_call_time"
@@ -57,6 +57,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:src="@drawable/ic_videocam"
+        android:src="@drawable/ic_action_videocam"
         app:tint="?attr/colorPrimary"/>
 </RelativeLayout>
