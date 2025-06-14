@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <!-- Warna abu-abu gelap semi transparan -->
+    <solid android:color="#80333333" />
+</shape>

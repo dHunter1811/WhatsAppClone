@@ -3,22 +3,22 @@
 
     <item
         android:id="@+id/navigation_chat"
-        android:icon="@drawable/ic_chat"
+        android:icon="@drawable/ic_main_chat"
         android:title="Chat" />
 
     <item
         android:id="@+id/navigation_updates"
-        android:icon="@drawable/ic_updates"
+        android:icon="@drawable/ic_main_updates"
         android:title="Pembaruan" />
 
     <item
         android:id="@+id/navigation_community"
-        android:icon="@drawable/ic_community"
+        android:icon="@drawable/ic_main_community"
         android:title="Komunitas" />
 
     <item
         android:id="@+id/navigation_calls"
-        android:icon="@drawable/ic_calls"
+        android:icon="@drawable/ic_action_call"
         android:title="Panggilan" />
 
 </menu>

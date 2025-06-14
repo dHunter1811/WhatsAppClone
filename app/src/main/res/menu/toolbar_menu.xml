@@ -1,13 +1,15 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/action_camera"
-        android:icon="@drawable/ic_camera"
-        android:title="Kamera"
-        android:showAsAction="always" />
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_more"
-        android:icon="@drawable/ic_more_vert"
-        android:title="Lainnya"
-        android:showAsAction="always" />
+        android:id="@+id/action_camera"
+        android:icon="@drawable/ic_action_camera"
+        android:title="Kamera"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_logout"
+        android:title="Logout"
+        app:showAsAction="ifRoom" />
 </menu>
