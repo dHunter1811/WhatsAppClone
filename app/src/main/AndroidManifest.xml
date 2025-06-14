@@ -8,7 +8,6 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
-
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -20,7 +19,7 @@
         android:theme="@style/Theme.WhatsAppClone"
         tools:targetApi="31">
 
-        <!-- Activity Anda yang sudah ada -->
+        <!-- Activity Anda yang lain -->
         <activity android:name=".auth.LoginActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,21 +27,23 @@
             </intent-filter>
         </activity>
         <activity android:name=".main.MainActivity" android:exported="false"/>
-        <activity android:name=".chat.ChatActivity" android:exported="false"/>
+
+        <activity
+            android:name=".chat.ChatActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity android:name=".status.StatusViewerActivity" android:exported="false"/>
         <activity android:name=".status.AddStatusActivity" android:exported="false"/>
         <activity android:name=".call.CallActivity" android:exported="false"/>
         <activity android:name=".call.IncomingCallActivity" android:exported="false"/>
         <activity android:name=".group.SelectMembersActivity" android:exported="false"/>
         <activity android:name=".group.CreateGroupInfoActivity" android:exported="false"/>
-        <activity android:name=".group.GroupChatActivity" android:exported="false"/>
+        <activity android:name=".group.GroupChatActivity"
+            android:windowSoftInputMode="adjustResize"/> <!-- Tambahkan juga untuk Grup Chat -->
+        <activity android:name=".contacts.ContactsActivity" android:exported="false" />
 
-        <!-- === TAMBAHKAN BARIS DI BAWAH INI === -->
-        <activity
-            android:name=".contacts.ContactsActivity"
-            android:exported="false" />
-        <!-- ===================================== -->
-
+        <!-- Layanan FCM Anda -->
         <service
             android:name=".services.MyFirebaseMessagingService"
             android:exported="false">

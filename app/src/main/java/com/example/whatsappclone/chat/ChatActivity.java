@@ -1,9 +1,11 @@
 package com.example.whatsappclone.chat;
 
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -17,10 +19,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.whatsappclone.R;
+import com.example.whatsappclone.call.CallActivity;
 import com.example.whatsappclone.shared.adapters.MessageAdapter;
 import com.example.whatsappclone.shared.models.Call;
 import com.example.whatsappclone.shared.models.Message;
-import com.example.whatsappclone.call.CallActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -35,10 +37,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import java.util.Random;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -63,44 +65,39 @@ public class ChatActivity extends AppCompatActivity {
     private String receiverUid;
     private String chatId;
 
+    private View rootLayout; // <-- Variabel baru untuk mendeteksi keyboard
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_main);
 
-        // Ambil data dari Intent
         receiverUid = getIntent().getStringExtra("chatUid");
-
-        // --- PERBAIKAN PENTING: Pemeriksaan Keamanan ---
-        // Jika karena suatu alasan ID tidak terkirim, tutup activity ini
-        // agar tidak terjadi crash atau menampilkan halaman kosong.
         if (receiverUid == null || receiverUid.isEmpty()) {
             Toast.makeText(this, "Gagal membuka chat. Pengguna tidak valid.", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        // Inisialisasi semua komponen
         initViews();
         initFirebase();
         setupRecyclerView();
         setupClickListeners();
 
-        // Buat ID chat dan muat data
         chatId = generateChatId(currentUser.getUid(), receiverUid);
         loadReceiverInfo();
         loadMessages();
+
+        // --- INI ADALAH LOGIKA BARU UNTUK MENANGANI KEYBOARD ---
+        setupKeyboardListener();
     }
 
     private void initViews() {
-        // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar_chat);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
-
-        // Custom Toolbar Views
         civProfileImage = findViewById(R.id.civ_profile_image_toolbar);
         tvUsername = findViewById(R.id.tv_username_toolbar);
         tvOnlineStatus = findViewById(R.id.tv_online_status_toolbar);
@@ -108,13 +105,25 @@ public class ChatActivity extends AppCompatActivity {
         ivVideoCall = findViewById(R.id.iv_video_call);
         ivCall = findViewById(R.id.iv_call);
         ivMore = findViewById(R.id.iv_more);
-
-        // Main UI
         messagesRecyclerView = findViewById(R.id.rv_messages);
         messageInput = findViewById(R.id.et_message_input);
         sendMessageButton = findViewById(R.id.btn_send_message);
-        btnPantun = findViewById(R.id.btn_pantun); // <-- Inisialisasi tombol baru
+        btnPantun = findViewById(R.id.btn_pantun);
+        rootLayout = findViewById(R.id.chat_root_layout); // Mengambil layout utama
+    }
 
+    // --- METODE BARU UNTUK MENDENGARKAN KEYBOARD ---
+    private void setupKeyboardListener() {
+        rootLayout.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            Rect r = new Rect();
+            rootLayout.getWindowVisibleDisplayFrame(r);
+            int screenHeight = rootLayout.getRootView().getHeight();
+            int keypadHeight = screenHeight - r.bottom;
+
+            if (keypadHeight > screenHeight * 0.15) { // Jika keyboard muncul
+                scrollToBottom();
+            }
+        });
     }
 
     private void initFirebase() {
@@ -124,10 +133,9 @@ public class ChatActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         messageList = new ArrayList<>();
-        // Mengirim 'false' karena ini bukan chat grup
         messageAdapter = new MessageAdapter(this, messageList, false);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        layoutManager.setStackFromEnd(true); // Pesan baru akan mendorong list ke atas
+        layoutManager.setStackFromEnd(true);
         messagesRecyclerView.setLayoutManager(layoutManager);
         messagesRecyclerView.setAdapter(messageAdapter);
     }
@@ -168,9 +176,6 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
     }
-
-
-
 
     private void initiateCall(String callType) {
         if (currentUser == null || receiverUid == null) {
@@ -220,6 +225,13 @@ public class ChatActivity extends AppCompatActivity {
         else return uid2 + "_" + uid1;
     }
 
+    // --- METODE BARU UNTUK MENGGULIR ---
+    private void scrollToBottom() {
+        if (messageAdapter != null && messageAdapter.getItemCount() > 0) {
+            messagesRecyclerView.post(() -> messagesRecyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1));
+        }
+    }
+
     private void sendMessage() {
         String messageText = messageInput.getText().toString().trim();
         if (TextUtils.isEmpty(messageText)) {
@@ -252,30 +264,27 @@ public class ChatActivity extends AppCompatActivity {
 
         // Simpan pesan ke sub-koleksi 'messages'
         chatRef.collection("messages").document(messageId).set(message);
+        scrollToBottom(); // Panggil scroll setelah mengirim
     }
 
     private void loadMessages() {
         CollectionReference messagesRef = db.collection("chats").document(chatId).collection("messages");
-
         messagesRef.orderBy("timestamp", Query.Direction.ASCENDING)
                 .addSnapshotListener((snapshots, error) -> {
                     if (error != null) { return; }
-
                     if (snapshots != null) {
                         messageList.clear();
                         for (DocumentSnapshot doc : snapshots.getDocuments()) {
                             Message message = doc.toObject(Message.class);
                             if (message != null) {
-                                // --- LOGIKA BARU UNTUK MENANDAI SEBAGAI DIBACA ---
                                 if (!message.getSenderId().equals(currentUser.getUid()) && !message.isRead()) {
-                                    // Jika pesan dari lawan bicara dan belum dibaca, update di Firestore
                                     doc.getReference().update("read", true);
                                 }
                                 messageList.add(message);
                             }
                         }
                         messageAdapter.notifyDataSetChanged();
-                        messagesRecyclerView.scrollToPosition(messageList.size() - 1);
+                        scrollToBottom(); // Panggil scroll setelah memuat pesan
                     }
                 });
     }
